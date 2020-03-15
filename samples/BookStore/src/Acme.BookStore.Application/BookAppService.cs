@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
@@ -7,7 +6,7 @@ using Volo.Abp.Domain.Repositories;
 namespace Acme.BookStore
 {
     public class BookAppService :
-        AsyncCrudAppService<Book, BookDto, Guid, PagedAndSortedResultRequestDto,
+        CrudAppService<Book, BookDto, Guid, PagedAndSortedResultRequestDto,
             CreateUpdateBookDto, CreateUpdateBookDto>,
         IBookAppService
     {
@@ -15,20 +14,6 @@ namespace Acme.BookStore
             : base(repository)
         {
 
-        }
-
-        public override async Task<BookDto> UpdateAsync(Guid id, CreateUpdateBookDto input)
-        {
-            await CheckUpdatePolicyAsync();
-
-            var entity = await GetEntityByIdAsync(id);
-
-            //TODO: Check if input has id different than given id and normalize if it's default value, throw ex otherwise
-
-            MapToEntity(input, entity);
-            await CurrentUnitOfWork.SaveChangesAsync();
-
-            return MapToEntityDto(entity);
         }
     }
 }

@@ -10,9 +10,9 @@ using Volo.Abp.MongoDB;
 
 namespace Volo.Abp.IdentityServer.MongoDB
 {
-    public class MongoPersistedGrantRepository : MongoDbRepository<IAbpIdentityServerMongoDbContext, PersistedGrant, Guid>, IPersistentGrantRepository
+    public class MongoPersistentGrantRepository : MongoDbRepository<IAbpIdentityServerMongoDbContext, PersistedGrant, Guid>, IPersistentGrantRepository
     {
-        public MongoPersistedGrantRepository(IMongoDbContextProvider<IAbpIdentityServerMongoDbContext> dbContextProvider) : base(dbContextProvider)
+        public MongoPersistentGrantRepository(IMongoDbContextProvider<IAbpIdentityServerMongoDbContext> dbContextProvider) : base(dbContextProvider)
         {
         }
 
@@ -27,6 +27,17 @@ namespace Volo.Abp.IdentityServer.MongoDB
         {
             return await GetMongoQueryable()
                 .Where(x => x.SubjectId == subjectId)
+                .ToListAsync(GetCancellationToken(cancellationToken))
+                ;
+        }
+
+        public async Task<List<PersistedGrant>> GetListByExpirationAsync(DateTime maxExpirationDate, int maxResultCount,
+            CancellationToken cancellationToken = default)
+        {
+            return await GetMongoQueryable()
+                .Where(x => x.Expiration != null && x.Expiration < maxExpirationDate)
+                .OrderBy(x => x.ClientId)
+                .Take(maxResultCount)
                 .ToListAsync(GetCancellationToken(cancellationToken));
         }
 

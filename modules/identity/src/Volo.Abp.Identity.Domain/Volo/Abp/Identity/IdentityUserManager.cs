@@ -25,7 +25,8 @@ namespace Volo.Abp.Identity
             IPasswordHasher<IdentityUser> passwordHasher,
             IEnumerable<IUserValidator<IdentityUser>> userValidators,
             IEnumerable<IPasswordValidator<IdentityUser>> passwordValidators,
-            ILookupNormalizer keyNormalizer, IdentityErrorDescriber errors,
+            ILookupNormalizer keyNormalizer,
+            IdentityErrorDescriber errors,
             IServiceProvider services,
             ILogger<IdentityUserManager> logger,
             ICancellationTokenProvider cancellationTokenProvider)
@@ -43,7 +44,7 @@ namespace Volo.Abp.Identity
             _cancellationTokenProvider = cancellationTokenProvider;
         }
 
-        public async Task<IdentityUser> GetByIdAsync(Guid id)
+        public virtual async Task<IdentityUser> GetByIdAsync(Guid id)
         {
             var user = await Store.FindByIdAsync(id.ToString(), CancellationToken);
             if (user == null)
@@ -54,7 +55,7 @@ namespace Volo.Abp.Identity
             return user;
         }
 
-        public async Task<IdentityResult> SetRolesAsync([NotNull] IdentityUser user, [NotNull] IEnumerable<string> roleNames)
+        public virtual async Task<IdentityResult> SetRolesAsync([NotNull] IdentityUser user, [NotNull] IEnumerable<string> roleNames)
         {
             Check.NotNull(user, nameof(user));
             Check.NotNull(roleNames, nameof(roleNames));

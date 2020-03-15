@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.Modularity;
+using Volo.Abp.MongoDB;
 using Volo.Abp.Users.MongoDB;
 using Volo.Blogging.Blogs;
 using Volo.Blogging.Comments;
@@ -11,21 +12,19 @@ namespace Volo.Blogging.MongoDB
 {
     [DependsOn(
         typeof(BloggingDomainModule),
+        typeof(AbpMongoDbModule),
         typeof(AbpUsersMongoDbModule)
     )]
     public class BloggingMongoDbModule : AbpModule
     {
         public override void ConfigureServices(ServiceConfigurationContext context)
         {
-            AbpBloggingBsonClassMap.Configure();
-
             context.Services.AddMongoDbContext<BloggingMongoDbContext>(options =>
             {
                 options.AddRepository<Blog, MongoBlogRepository>();
                 options.AddRepository<BlogUser, MongoBlogUserRepository>();
                 options.AddRepository<Post, MongoPostRepository>();
                 options.AddRepository<Tag, MongoTagRepository>();
-                options.AddRepository<PostTag, MongoPostTagRepository>();
                 options.AddRepository<Comment, MongoCommentRepository>();
             });
         }

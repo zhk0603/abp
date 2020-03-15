@@ -38,13 +38,14 @@ If you want to add multiple files, this can be tedious. Alternatively, you can d
 
 ````C#
 <ItemGroup>
-  <None Remove="MyResources\**\*.*" />
+  <EmbeddedResource Include="MyResources\**\*.*" />
+  <Content Remove="MyResources\**\*.*" />
 </ItemGroup>
 ````
 
 This configuration recursively adds all files under the **MyResources** folder of the project (including the files you will add in the future).
 
-Then the module needs to be configured using `VirtualFileSystemOptions` to register the embedded files to the virtual file system. Example:
+Then the module needs to be configured using `AbpVirtualFileSystemOptions` to register the embedded files to the virtual file system. Example:
 
 ````C#
 using Microsoft.Extensions.DependencyInjection;
@@ -58,10 +59,10 @@ namespace MyCompany.MyProject
     {
         public override void ConfigureServices(ServiceConfigurationContext context)
         {
-            Configure<VirtualFileSystemOptions>(options =>
+            Configure<AbpVirtualFileSystemOptions>(options =>
             {
                 //Register all embedded files of this assembly to the virtual file system
-                options.FileSets.AddEmbedded<MyModule>();
+                options.FileSets.AddEmbedded<MyModule>("YourRootNameSpace");
             });
 
             //...
@@ -73,8 +74,11 @@ namespace MyCompany.MyProject
 The `AddEmbedded` extension method takes a class, finds all embedded files from the assembly of the given class and registers them to the virtual file system. More concisely it could be written as follows:
 
 ````C#
-options.FileSets.Add(new EmbeddedFileSet(typeof(MyModule).Assembly));
+options.FileSets.Add(
+    new EmbeddedFileSet(typeof(MyModule).Assembly), "YourRootNameSpace");
 ````
+
+> "YourRootNameSpace" is the root namespace of your project. It can be empty if your root namespace is empty.
 
 #### Getting Virtual Files: IVirtualFileProvider
 
@@ -108,7 +112,7 @@ Embedding a file into a module assembly and being able to use it from another pr
 
 Let's assume that you're developing a module that contains an embedded JavaScript file. Whenever you change this file you must re-compile the project, re-start the application and refresh the browser page to take the change. Obviously, this is very time consuming and tedious.
 
-What is needed is the ability for the application to directly use the physical file at development time and a have a browser refresh reflect any change made in the JavaScript file. The `ReplaceEmbeddedByPyhsical` method makes all this possible. 
+What is needed is the ability for the application to directly use the physical file at development time and a have a browser refresh reflect any change made in the JavaScript file. The `ReplaceEmbeddedByPhysical` method makes all this possible. 
 
 The example below shows an application that depends on a module (`MyModule`) that itself contains embedded files.  The application can reach the source code of the module at development time. 
 
@@ -122,10 +126,10 @@ public class MyWebAppModule : AbpModule
 
         if (hostingEnvironment.IsDevelopment()) //only for development time
         {
-            Configure<VirtualFileSystemOptions>(options =>
+            Configure<AbpVirtualFileSystemOptions>(options =>
             {
-                //ReplaceEmbeddedByPyhsical gets the root folder of the MyModule project
-                options.FileSets.ReplaceEmbeddedByPyhsical<MyModule>(
+                //ReplaceEmbeddedByPhysical gets the root folder of the MyModule project
+                options.FileSets.ReplaceEmbeddedByPhysical<MyModule>(
                     Path.Combine(hostingEnvironment.ContentRootPath, string.Format("..{0}MyModuleProject", Path.DirectorySeparatorChar))
                 );
             });

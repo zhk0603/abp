@@ -28,16 +28,13 @@ namespace Volo.Abp.TestApp.Testing
         }
 
         [Fact]
-        public void Complex_Event_Test()
+        public async Task Complex_Event_Test()
         {
             var personName = Guid.NewGuid().ToString("N");
 
             var creatingEventTriggered = false;
             var createdEventTriggered = false;
             var createdEtoTriggered = false;
-            var updatedEtoTriggered = false;
-            var updatingEventTriggered = false;
-            var updatedEventTriggered = false;
 
             using (var uow = GetRequiredService<IUnitOfWorkManager>().Begin())
             {
@@ -45,18 +42,14 @@ namespace Volo.Abp.TestApp.Testing
                 {
                     creatingEventTriggered.ShouldBeFalse();
                     createdEventTriggered.ShouldBeFalse();
-                    updatingEventTriggered.ShouldBeFalse();
-                    updatedEventTriggered.ShouldBeFalse();
 
                     creatingEventTriggered = true;
 
                     data.Entity.Name.ShouldBe(personName);
 
-                    /* Want to change age from 15 to 18
-                     * Expect to trigger EntityUpdatingEventData, EntityUpdatedEventData events */
+                    /* Want to change age from 15 to 18 */
                     data.Entity.Age.ShouldBe(15);
                     data.Entity.Age = 18;
-                    PersonRepository.Update(data.Entity);
                     return Task.CompletedTask;
                 });
 
@@ -64,8 +57,6 @@ namespace Volo.Abp.TestApp.Testing
                 {
                     creatingEventTriggered.ShouldBeTrue();
                     createdEventTriggered.ShouldBeFalse();
-                    updatingEventTriggered.ShouldBeTrue();
-                    updatedEventTriggered.ShouldBeFalse();
 
                     createdEventTriggered = true;
 
@@ -84,57 +75,14 @@ namespace Volo.Abp.TestApp.Testing
                     return Task.CompletedTask;
                 });
 
-                LocalEventBus.Subscribe<EntityUpdatingEventData<Person>>(data =>
-                {
-                    creatingEventTriggered.ShouldBeTrue();
-                    createdEventTriggered.ShouldBeFalse();
-                    updatingEventTriggered.ShouldBeFalse();
-                    updatedEventTriggered.ShouldBeFalse();
+                await PersonRepository.InsertAsync(new Person(Guid.NewGuid(), personName, 15));
 
-                    updatingEventTriggered = true;
-
-                    data.Entity.Name.ShouldBe(personName);
-                    data.Entity.Age.ShouldBe(18);
-
-                    return Task.CompletedTask;
-                });
-
-                LocalEventBus.Subscribe<EntityUpdatedEventData<Person>>(data =>
-                {
-                    creatingEventTriggered.ShouldBeTrue();
-                    createdEventTriggered.ShouldBeTrue();
-                    updatingEventTriggered.ShouldBeTrue();
-                    updatedEventTriggered.ShouldBeFalse();
-
-                    updatedEventTriggered = true;
-
-                    data.Entity.Name.ShouldBe(personName);
-                    data.Entity.Age.ShouldBe(18);
-
-                    return Task.CompletedTask;
-                });
-
-                DistributedEventBus.Subscribe<EntityUpdatedEto<PersonEto>>(eto =>
-                {
-                    eto.Entity.Name.ShouldBe(personName);
-                    eto.Entity.Age.ShouldBe(18);
-
-                    updatedEtoTriggered = true;
-
-                    return Task.CompletedTask;
-                });
-
-                PersonRepository.Insert(new Person(Guid.NewGuid(), personName, 15));
-
-                uow.Complete();
+                await uow.CompleteAsync();
             }
            
             creatingEventTriggered.ShouldBeTrue();
             createdEventTriggered.ShouldBeTrue();
             createdEtoTriggered.ShouldBeTrue();
-            updatingEventTriggered.ShouldBeTrue();
-            updatedEventTriggered.ShouldBeTrue();
-            updatedEtoTriggered.ShouldBeTrue();
         }
     }
 }

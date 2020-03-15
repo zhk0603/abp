@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Shouldly;
+using Volo.Abp.Application.Dtos;
 
 namespace Volo.Abp.Identity
 {
@@ -38,11 +39,10 @@ namespace Volo.Abp.Identity
         {
             //Act
 
-            var result = await _roleAppService.GetListAsync(new GetIdentityRolesInput());
+            var result = await _roleAppService.GetListAsync(new PagedAndSortedResultRequestDto());
 
             //Assert
 
-            result.TotalCount.ShouldBeGreaterThan(0);
             result.Items.Count.ShouldBeGreaterThan(0);
         }
 
@@ -78,7 +78,10 @@ namespace Volo.Abp.Identity
 
             var input = new IdentityRoleUpdateDto
             {
-                Name = Guid.NewGuid().ToString("N").Left(8)
+                Name = Guid.NewGuid().ToString("N").Left(8),
+                ConcurrencyStamp = moderator.ConcurrencyStamp,
+                IsDefault = moderator.IsDefault,
+                IsPublic = moderator.IsPublic
             };
 
             //Act

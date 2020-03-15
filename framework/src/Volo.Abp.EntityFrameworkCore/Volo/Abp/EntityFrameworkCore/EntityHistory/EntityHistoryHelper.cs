@@ -103,7 +103,7 @@ namespace Volo.Abp.EntityFrameworkCore.EntityHistory
                 EntityId = entityId,
                 EntityTypeFullName = entityType.FullName,
                 PropertyChanges = GetPropertyChanges(entityEntry),
-                TenantId = GetTenantId(entity)
+                EntityTenantId = GetTenantId(entity)
             };
 
             return entityChange;
@@ -171,8 +171,7 @@ namespace Volo.Abp.EntityFrameworkCore.EntityHistory
                         NewValue = isDeleted ? null : JsonSerializer.Serialize(propertyEntry.CurrentValue).TruncateWithPostfix(EntityPropertyChangeInfo.MaxValueLength),
                         OriginalValue = isCreated ? null : JsonSerializer.Serialize(propertyEntry.OriginalValue).TruncateWithPostfix(EntityPropertyChangeInfo.MaxValueLength),
                         PropertyName = property.Name,
-                        PropertyTypeFullName = property.ClrType.GetFirstGenericArgumentIfNullable().FullName,
-                        TenantId = GetTenantId(entityEntry.Entity)
+                        PropertyTypeFullName = property.ClrType.GetFirstGenericArgumentIfNullable().FullName
                     });
                 }
             }
@@ -225,18 +224,18 @@ namespace Volo.Abp.EntityFrameworkCore.EntityHistory
                 return true;
             }
 
+            if (entityEntry.Metadata.GetProperties()
+                .Any(p => p.PropertyInfo?.IsDefined(typeof(AuditedAttribute)) ?? false))
+            {
+                return true;
+            }
+
             if (entityType.IsDefined(typeof(DisableAuditingAttribute), true))
             {
                 return false;
             }
 
             if (Options.EntityHistorySelectors.Any(selector => selector.Predicate(entityType)))
-            {
-                return true;
-            }
-
-            var properties = entityEntry.Metadata.GetProperties();
-            if (properties.Any(p => p.PropertyInfo?.IsDefined(typeof(AuditedAttribute)) ?? false))
             {
                 return true;
             }
@@ -266,8 +265,7 @@ namespace Volo.Abp.EntityFrameworkCore.EntityHistory
                 }
             }
 
-            var isModified = !(propertyEntry.OriginalValue?.Equals(propertyEntry.CurrentValue) ?? propertyEntry.CurrentValue == null);
-            if (isModified)
+            if (propertyEntry.IsModified)
             {
                 return true;
             }

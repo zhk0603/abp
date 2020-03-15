@@ -14,7 +14,7 @@ namespace Volo.Abp.IdentityServer
     {
         public override void ConfigureServices(ServiceConfigurationContext context)
         {
-            context.Services.AddAlwaysAllowPermissionChecker();
+            context.Services.AddAlwaysAllowAuthorization();
         }
 
         public override void OnApplicationInitialization(ApplicationInitializationContext context)
@@ -26,12 +26,9 @@ namespace Volo.Abp.IdentityServer
         {
             using (var scope = context.ServiceProvider.CreateScope())
             {
-                //var dataSeeder = scope.ServiceProvider.GetRequiredService<IIdentityServerDataSeeder>();
-                //AsyncHelper.RunSync(() => dataSeeder.SeedAsync("1q2w3E*"));
-
-                scope.ServiceProvider
+                AsyncHelper.RunSync(() => scope.ServiceProvider
                     .GetRequiredService<AbpIdentityServerTestDataBuilder>()
-                    .Build();
+                    .BuildAsync());
             }
         }
     }

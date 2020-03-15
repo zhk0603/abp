@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.DependencyInjection;
 using Volo.Abp.DependencyInjection;
 
@@ -12,12 +14,12 @@ namespace Volo.Abp.EventBus
     {
         public Type HandlerType { get; }
 
-        protected IServiceScope ServiceScope { get; }
+        protected IServiceScopeFactory ScopeFactory { get; }
 
-        public IocEventHandlerFactory(IHybridServiceScopeFactory scopeFactory, Type handlerType)
+        public IocEventHandlerFactory(IServiceScopeFactory scopeFactory, Type handlerType)
         {
+            ScopeFactory = scopeFactory;
             HandlerType = handlerType;
-            ServiceScope = scopeFactory.CreateScope();
         }
 
         /// <summary>
@@ -26,16 +28,23 @@ namespace Volo.Abp.EventBus
         /// <returns>Resolved handler object</returns>
         public IEventHandlerDisposeWrapper GetHandler()
         {
-            var scope = ServiceScope.ServiceProvider.CreateScope();
+            var scope = ScopeFactory.CreateScope();
             return new EventHandlerDisposeWrapper(
                 (IEventHandler) scope.ServiceProvider.GetRequiredService(HandlerType),
                 () => scope.Dispose()
             );
         }
 
+        public bool IsInFactories(List<IEventHandlerFactory> handlerFactories)
+        {
+            return handlerFactories
+                .OfType<IocEventHandlerFactory>()
+                .Any(f => f.HandlerType == HandlerType);
+        }
+
         public void Dispose()
         {
-            ServiceScope.Dispose();
+
         }
     }
 }

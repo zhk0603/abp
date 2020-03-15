@@ -7,7 +7,7 @@ using Volo.Abp.Domain.Entities;
 
 namespace Volo.Docs.Projects
 {
-    public class Project : AggregateRoot<Guid>, IHasExtraProperties
+    public class Project : AggregateRoot<Guid>
     {
         /// <summary>
         /// Name of the project for display purposes.
@@ -34,16 +34,17 @@ namespace Volo.Docs.Projects
         /// </summary>
         public virtual string NavigationDocumentName { get; protected set; }
 
+        /// <summary>
+        /// The document to be used for the parameters file (index).
+        /// </summary>
+        public virtual string ParametersDocumentName { get; protected set; }
+
         public virtual string MinimumVersion { get; set; }
 
         /// <summary>
         /// The source of the documents (e.g. Github).
         /// </summary>
         public virtual string DocumentStoreType { get; protected set; }
-
-        public virtual string GoogleCustomSearchId { get; set; }
-
-        public virtual Dictionary<string, object> ExtraProperties { get; protected set; }
 
         public virtual string MainWebsiteUrl { get; set; }
 
@@ -58,17 +59,48 @@ namespace Volo.Docs.Projects
             Guid id, 
             [NotNull] string name, 
             [NotNull] string shortName, 
-            [NotNull] string defaultDocumentName, 
-            [NotNull] string navigationDocumentName)
+            [NotNull] string documentStoreType,
+            [NotNull] string format,
+            [NotNull] string defaultDocumentName = "Index", 
+            [NotNull] string navigationDocumentName = "docs-nav.json", 
+            [NotNull] string parametersDocumentName = "docs-params.json")
         {
             Id = id;
 
             Name = Check.NotNullOrWhiteSpace(name, nameof(name));
             ShortName = Check.NotNullOrWhiteSpace(shortName, nameof(shortName));
+            DocumentStoreType = Check.NotNullOrWhiteSpace(documentStoreType, nameof(documentStoreType));
+            Format = Check.NotNullOrWhiteSpace(format, nameof(format));
             DefaultDocumentName = Check.NotNullOrWhiteSpace(defaultDocumentName, nameof(defaultDocumentName));
             NavigationDocumentName = Check.NotNullOrWhiteSpace(navigationDocumentName, nameof(navigationDocumentName));
+            ParametersDocumentName = Check.NotNullOrWhiteSpace(parametersDocumentName, nameof(parametersDocumentName));
 
             ExtraProperties = new Dictionary<string, object>();
+        }
+
+        public void SetName(string name)
+        {
+            Name = Check.NotNullOrWhiteSpace(name, nameof(name));
+        }
+
+        public void SetFormat(string format)
+        {
+            Format = Check.NotNullOrWhiteSpace(format, nameof(format));
+        }
+
+        public void SetNavigationDocumentName(string navigationDocumentName)
+        {
+            NavigationDocumentName = Check.NotNullOrWhiteSpace(navigationDocumentName, nameof(navigationDocumentName));
+        }
+
+        public void SetParametersDocumentName(string parametersDocumentName)
+        {
+            ParametersDocumentName = Check.NotNullOrWhiteSpace(parametersDocumentName, nameof(parametersDocumentName));
+        }
+
+        public void SetDefaultDocumentName(string defaultDocumentName)
+        {
+            DefaultDocumentName = Check.NotNullOrWhiteSpace(defaultDocumentName, nameof(defaultDocumentName));
         }
     }
 }

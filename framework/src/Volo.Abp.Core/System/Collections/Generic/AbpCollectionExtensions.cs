@@ -75,7 +75,7 @@ namespace System.Collections.Generic
         public static bool AddIfNotContains<T>([NotNull] this ICollection<T> source, [NotNull] Func<T, bool> predicate, [NotNull] Func<T> itemFactory)
         {
             Check.NotNull(source, nameof(source));
-            Check.NotNull(source, nameof(predicate));
+            Check.NotNull(predicate, nameof(predicate));
             Check.NotNull(itemFactory, nameof(itemFactory));
 
             if (source.Any(predicate))
@@ -88,7 +88,7 @@ namespace System.Collections.Generic
         }
 
         /// <summary>
-        /// Removed all items from the collection those satisfy the given <paramref name="predicate"/>.
+        /// Removes all items from the collection those satisfy the given <paramref name="predicate"/>.
         /// </summary>
         /// <typeparam name="T">Type of the items in the collection</typeparam>
         /// <param name="source">The collection</param>

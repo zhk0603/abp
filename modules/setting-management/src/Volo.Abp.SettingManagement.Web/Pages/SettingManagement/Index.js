@@ -1,7 +1,7 @@
-﻿(function($) {
+﻿(function ($) {
+    var l = abp.localization.getResource('AbpSettingManagement');
 
-    $(function() {
-        console.log('loaded setting management page');
+    $(document).on("AbpSettingSaved", function () {
+        abp.notify.success(l("SuccessfullySaved"));
     });
-
 })(jQuery);

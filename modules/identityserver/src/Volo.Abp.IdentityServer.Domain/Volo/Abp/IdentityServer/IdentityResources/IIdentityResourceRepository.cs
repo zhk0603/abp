@@ -22,11 +22,16 @@ namespace Volo.Abp.IdentityServer.IdentityResources
             CancellationToken cancellationToken = default
         );
 
-        Task<List<IdentityResource>> GetListAsync(
-            bool includeDetails = false,
+        Task<IdentityResource> FindByNameAsync(
+            string name,
+            bool includeDetails = true,
             CancellationToken cancellationToken = default
         );
 
-        Task<long> GetTotalCount();
+        Task<bool> CheckNameExistAsync(
+            string name,
+            Guid? expectedId = null,
+            CancellationToken cancellationToken = default
+         );
     }
 }
