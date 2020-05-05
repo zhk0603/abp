@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -43,7 +43,7 @@ namespace Volo.Abp.Cli.ProjectModification
 
         private string ProcessReferenceNodes(string folder, XmlDocument doc, List<NugetPackageInfoWithModuleName> nugetPackageList, string localPathPrefix, string sourceFile = "src")
         {
-            var nodes = doc.SelectNodes("/Project/ItemGroup/PackageReference[starts-with(@Include, 'Volo.Abp')]");
+            var nodes = doc.SelectNodes("/Project/ItemGroup/PackageReference[starts-with(@Include, 'Volo.')]");
 
             if (nodes == null)
             {
@@ -52,6 +52,7 @@ namespace Volo.Abp.Cli.ProjectModification
 
             foreach (XmlNode oldNode in nodes)
             {
+                var tempSourceFile = sourceFile;
                 var oldNodeIncludeValue = oldNode?.Attributes?["Include"]?.Value;
 
                 var moduleName = nugetPackageList.FirstOrDefault(n => n.NugetPackage.Name == oldNodeIncludeValue)?.ModuleName;
@@ -65,13 +66,14 @@ namespace Volo.Abp.Cli.ProjectModification
                         moduleName = Directory.GetParent(Directory.GetParent(Path.GetDirectoryName(localProject)).FullName).Name;
 
                         if (oldNodeIncludeValue.EndsWith(".test", StringComparison.InvariantCultureIgnoreCase) ||
-                            oldNodeIncludeValue.EndsWith(".tests", StringComparison.InvariantCultureIgnoreCase))
+                            oldNodeIncludeValue.EndsWith(".tests", StringComparison.InvariantCultureIgnoreCase) ||
+                            oldNodeIncludeValue.EndsWith(".testbase", StringComparison.InvariantCultureIgnoreCase))
                         {
-                            sourceFile = "test";
+                            tempSourceFile = "test";
                         }
                         else
                         {
-                            sourceFile = "src";
+                            tempSourceFile = "src";
                         }
                     }
                     else
@@ -81,7 +83,7 @@ namespace Volo.Abp.Cli.ProjectModification
                 }
 
                 var referenceProjectPath =
-                    $"{localPathPrefix}{moduleName}\\{sourceFile}\\{oldNodeIncludeValue}\\{oldNodeIncludeValue}.csproj";
+                    $"{localPathPrefix}{moduleName}\\{tempSourceFile}\\{oldNodeIncludeValue}\\{oldNodeIncludeValue}.csproj";
 
                 XmlNode newNode = GetNewReferenceNode(doc, referenceProjectPath);
 
